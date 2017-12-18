@@ -1,0 +1,9 @@
+[Desktop Entry]
+Encoding=UTF-8
+Type=Service
+Name=AppImage Files
+ServiceTypes=ThumbCreator
+MimeType=application/*;
+CacheThumbnail=true
+X-KDE-Library=AppImageThumbs
+ThumbnailerVersion=30
