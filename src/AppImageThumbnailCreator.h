@@ -18,13 +18,16 @@ class AppImageThumbnailCreator : public QObject, public ThumbCreator {
 Q_OBJECT
     QMimeDatabase db;
 public:
-    AppImageThumbnailCreator(QObject *parent = 0);
-    virtual ~AppImageThumbnailCreator();
-    virtual bool create(const QString &path, int w, int h, QImage &thumb);
-    virtual Flags flags() const;
+    explicit AppImageThumbnailCreator(QObject *parent = 0);
+    ~AppImageThumbnailCreator() override;
+    bool create(const QString &path, int w, int h, QImage &thumb) override;
+    Flags flags() const override;
 
-    QString getXdgThumbnailPath(const QString &path);
+    static QString getXdgThumbnailPath(const QString &path);
     bool isAnAcceptedMimeType(const QString &path) const;
+
+    static QString appendProtocolPrefixIfNeeded(const QString &path);
+    static QString removeProtocolPrefixIfNeeded(const QString &path);
 };
 
 

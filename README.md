@@ -17,7 +17,7 @@ QT  >=5.2.x
 cd AppImageThumbs
 mkdir build
 cd build
-cmake -DCMAKE_INSTALL_PREFIX=`kf5-config --prefix` ..
+cmake -DKDE_INSTALL_USE_QT_SYS_PATHS=ON -DCMAKE_INSTALL_PREFIX=`kf5-config --prefix` ..
 make
 ```
 
