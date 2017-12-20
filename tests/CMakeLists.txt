@@ -1,6 +1,6 @@
 enable_testing()
 
-find_package(Qt5 ${QT_MIN_VERSION} CONFIG REQUIRED COMPONENTS Core Gui Test)
+find_package(Qt5 ${QT_MIN_VERSION} CONFIG REQUIRED COMPONENTS Test)
 find_package(KF5 REQUIRED COMPONENTS KIO)
 
 cmake_policy(SET CMP0063 NEW)
@@ -12,8 +12,6 @@ add_executable(TestAppImageThumbnailCreator
         TestAppImageThumbnailCreator.h)
 
 target_link_libraries(TestAppImageThumbnailCreator PRIVATE
-        Qt5::Core
-        Qt5::Gui
         Qt5::Test
         KF5::KIOWidgets)
 

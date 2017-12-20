@@ -33,7 +33,7 @@ AppImageThumbnailCreator::~AppImageThumbnailCreator() {
 
 
 ThumbCreator::Flags AppImageThumbnailCreator::flags() const {
-    return (ThumbCreator::Flags) (ThumbCreator::DrawFrame | ThumbCreator::BlendIcon);
+    return ThumbCreator::None;
 }
 
 bool AppImageThumbnailCreator::create(const QString &path, int w, int h, QImage &thumb) {
