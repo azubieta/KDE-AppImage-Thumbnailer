@@ -23,11 +23,12 @@ public:
     bool create(const QString &path, int w, int h, QImage &thumb) override;
     Flags flags() const override;
 
-    static QString getXdgThumbnailPath(const QString &path);
     bool isAnAcceptedMimeType(const QString &path) const;
 
-    static QString appendProtocolPrefixIfNeeded(const QString &path);
-    static QString removeProtocolPrefixIfNeeded(const QString &path);
+private:
+    QString removeProtocolPrefixIfNeeded(const QString &path);
+    QString appendProtocolPrefixIfNeeded(const QString &path);
+
 };
 
 

@@ -17,48 +17,34 @@ TestAppImageThumbnailCreator::TestAppImageThumbnailCreator(QObject *parent) : QO
     appimage_file_path = "file://" TEST_DATA_DIR "Echo-x86_64.AppImage";
 }
 
-void TestAppImageThumbnailCreator::testThumbnailPathGeneration() {
-    AppImageThumbnailCreator c;
-    QString path = "/tmp/test";
-
-    QString result = c.getXdgThumbnailPath(path);
-    QString expected = QStandardPaths::standardLocations(QStandardPaths::GenericCacheLocation).first();
-    expected += "/thumbnails/normal/1fe712c2e25067e4484d12c8aa548f91.png";
-    QCOMPARE(expected, result);
-}
-
 void TestAppImageThumbnailCreator::testThumbnailCreation() {
     AppImageThumbnailCreator c;
 
-    QString thumbnail_example = TEST_DATA_DIR "thumbnail.png";
-    QString thumbnail_destination = AppImageThumbnailCreator::getXdgThumbnailPath(appimage_file_path);
-    QFile f(thumbnail_example);
-
-    f.copy(thumbnail_destination);
-
     QImage thumb;
-    bool ok = c.create(appimage_file_path, 48, 48, thumb);
-    ok = ok && !thumb.isNull();
+    bool success = c.create(TEST_DATA_DIR "Echo-x86_64.AppImage", 48, 48, thumb);
 
-    QFile::remove(thumbnail_destination);
-    if (!ok)
-        QFAIL("The thumbnail wasn't created.");
+    QTEST_ASSERT(success);
+
+    QImage expected;
+    expected.load(TEST_DATA_DIR "thumbnail.png");
+    expected = expected.scaled(48, 48, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+
+    QTEST_ASSERT(!thumb.isNull());
+    QTEST_ASSERT(!expected.isNull());
+    QTEST_ASSERT(expected == thumb);
 }
 
 
 void TestAppImageThumbnailCreator::testInstallation() {
     QStringList plugins = KIO::PreviewJob::availablePlugins();
-    qDebug() << plugins;
-//    Q_ASSERT(plugins.contains("appimagethumbnail"));
+    Q_ASSERT(plugins.contains("appimagethumbnail"));
 }
 
 
 void TestAppImageThumbnailCreator::testPreviewJob() {
     QString thumbnail_example = "file://" TEST_DATA_DIR "thumbnail.png";
-    QString thumbnail_destination = AppImageThumbnailCreator::getXdgThumbnailPath(appimage_file_path);
 
     QFile f(thumbnail_example);
-    f.copy(thumbnail_destination);
 
     KFileItemList items;
     items.append(KFileItem(QUrl(thumbnail_example)));
@@ -66,11 +52,11 @@ void TestAppImageThumbnailCreator::testPreviewJob() {
 
     QStringList plugins = {"imagethumbnail", "appimagethumbnail"};
     const QSize size(48, 48);
-    KIO::PreviewJob *job = new KIO::PreviewJob(items, size, &plugins);
-    qDebug() << plugins;
+    KIO::PreviewJob *job = KIO::filePreview(items, size, &plugins);
+    qWarning() << "plugins: " << plugins;
+    qWarning() << "supported: " << job->supportedMimeTypes();
     connect(job, &KIO::PreviewJob::failed, [=](const KFileItem &item) {
-        qWarning() << "Failed to created thumbnail for " << item.name() << item.mimetype();
-        qWarning() << job->errorString();
+        qWarning() << "Failed to created thumbnail for " << item.url() << item.mimetype();
         QFAIL("Job failed to create a thumbnail.");
     });
 
@@ -81,16 +67,15 @@ void TestAppImageThumbnailCreator::testPreviewJob() {
             qDebug() << "Thumbnail created for: " << item.name();
     });
 
-    connect(job, &KJob::infoMessage, [=](KJob *, const QString &plain, const QString &) {
-        qDebug() << plain;
+    connect(job, &KJob::infoMessage, [=](KJob *, const QString &plain, const QString &msg) {
+        qWarning() << plain << msg;
     });
 
-    connect(job, &KJob::warning, [=](KJob *, const QString &plain, const QString &) {
-        qWarning() << plain;
+    connect(job, &KJob::warning, [=](KJob *, const QString &plain, const QString &msg) {
+        qWarning() << plain << msg;
     });
 
     bool res = job->exec();
-    QFile::remove(thumbnail_destination);
 
     if (!res)
         QFAIL("There was an error while executing the job");

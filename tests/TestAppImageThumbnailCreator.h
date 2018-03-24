@@ -16,8 +16,9 @@ class TestAppImageThumbnailCreator : public  QObject {
 public:
     TestAppImageThumbnailCreator(QObject *parent = 0);
 
+
+
 private slots:
-    void testThumbnailPathGeneration();
     void testThumbnailCreation();
     void testInstallation();
     void testPreviewJob();

@@ -8,8 +8,9 @@
 #include <QLoggingCategory>
 #include <QUrl>
 #include <QFile>
-#include <QtCore/QRegularExpression>
-
+#include <QDir>
+#include <appimage/appimage.h>
+#include <QTemporaryFile>
 
 #include "AppImageThumbnailCreator.h"
 
@@ -21,7 +22,7 @@ extern "C"
 Q_DECL_EXPORT ThumbCreator *new_creator() {
     return new AppImageThumbnailCreator();
 }
-};
+}
 
 AppImageThumbnailCreator::AppImageThumbnailCreator(QObject *parent) : QObject(parent) {
 
@@ -37,41 +38,39 @@ ThumbCreator::Flags AppImageThumbnailCreator::flags() const {
 }
 
 bool AppImageThumbnailCreator::create(const QString &path, int w, int h, QImage &thumb) {
-    QImage i;
     qCDebug(LOG_APPIMAGE_THUMBS) << "Making thumbnail for: " << path;
-    QString xdg_thumbnail_path = getXdgThumbnailPath(path);
+    auto newPath = removeProtocolPrefixIfNeeded(path);
 
-    qCDebug(LOG_APPIMAGE_THUMBS) << "Opening url:" << xdg_thumbnail_path;
-    QImage xdg_thumbnail;
-    xdg_thumbnail.load(xdg_thumbnail_path);
+    QString tmpPath = QDir::tempPath() + "/appimage_thumbnailer_XXXXXX";
+    QFile file("/tmp/log");
+    bool succesed = false;
 
-    if (!xdg_thumbnail.isNull()) {
-        thumb = xdg_thumbnail.scaled(w, h, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-        qCDebug(LOG_APPIMAGE_THUMBS) << "Done!";
-        return true;
-    } else {
-        qCDebug(LOG_APPIMAGE_THUMBS) << "Failed!";
-        return false;
-    }
+    file.write(newPath.toLocal8Bit());
+    file.write(tmpPath.toLocal8Bit());
+    appimage_extract_file_following_symlinks(newPath.toStdString().c_str(), ".DirIcon",
+                                             tmpPath.toStdString().c_str());
+
+    succesed = thumb.load(tmpPath);
+    thumb = thumb.scaled(w, h);
+
+    QFile::remove(tmpPath);
+
+    return succesed;
+
 }
 
 bool AppImageThumbnailCreator::isAnAcceptedMimeType(const QString &path) const {
     QMimeType type = db.mimeTypeForFile(path);
-    return type.isValid() && type.inherits("applications/x-iso9660-appimage");
+    return type.isValid() &&
+           (type.inherits("application/x-iso9660-appimage") || type.inherits("application/vnd.appimage"));
 }
 
-QString AppImageThumbnailCreator::getXdgThumbnailPath(const QString &path) {
-    QString correctPath = appendProtocolPrefixIfNeeded(path);
+QString AppImageThumbnailCreator::removeProtocolPrefixIfNeeded(const QString &path) {
+    QString correctPath = path;
+    if (path.startsWith("file://"))
+        correctPath = correctPath.replace("file://", "", Qt::CaseInsensitive);
 
-    QString thumbnail_name =
-            QCryptographicHash::hash(QFile::encodeName(correctPath), QCryptographicHash::Md5).toHex() + ".png";
-
-
-    QString xdg_thumbnail_path = QStandardPaths::standardLocations(QStandardPaths::GenericCacheLocation).first();
-
-    xdg_thumbnail_path += "/thumbnails/normal/" + thumbnail_name;
-
-    return xdg_thumbnail_path;
+    return correctPath;
 }
 
 QString AppImageThumbnailCreator::appendProtocolPrefixIfNeeded(const QString &path) {
@@ -80,14 +79,6 @@ QString AppImageThumbnailCreator::appendProtocolPrefixIfNeeded(const QString &pa
         correctPath = "file://" + path;
     else
         correctPath = path;
-
-    return correctPath;
-}
-
-QString AppImageThumbnailCreator::removeProtocolPrefixIfNeeded(const QString &path) {
-    QString correctPath = path;
-    if (path.startsWith("file://"))
-        correctPath = correctPath.replace("file://", "",  Qt::CaseInsensitive);
 
     return correctPath;
 }

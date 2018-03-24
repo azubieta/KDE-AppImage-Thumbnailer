@@ -13,7 +13,8 @@ add_executable(TestAppImageThumbnailCreator
 
 target_link_libraries(TestAppImageThumbnailCreator PRIVATE
         Qt5::Test
-        KF5::KIOWidgets)
+        KF5::KIOWidgets
+        libappimage)
 
 target_compile_definitions(TestAppImageThumbnailCreator PRIVATE TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data/")
 
