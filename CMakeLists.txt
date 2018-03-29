@@ -15,6 +15,7 @@ include(KDECMakeSettings)
 include(KDECompilerSettings)
 
 include(third-party/libappimage.cmake)
+include(pack/cpack_deb.cmake)
 
 add_subdirectory(src)
 add_subdirectory(tests)
