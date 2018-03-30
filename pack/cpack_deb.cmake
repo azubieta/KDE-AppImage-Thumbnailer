@@ -33,6 +33,6 @@ set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
 set(CPACK_DEBIAN_PACKAGE_SECTION Utilities)
 set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "KF5 AppImage Thumbnailer\n Generate tumbnails for AppImage files in Dolphin, Konkeror and other KIO based apps.")
 
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "libappimage libkf5kiocore5 libkf5kiowidgets5")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libappimage, libkf5kiocore5, libkf5kiowidgets5")
 
 include(CPack)
