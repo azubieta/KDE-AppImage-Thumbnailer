@@ -10,7 +10,7 @@ if ( NOT AppImageKit_FOUND)
         GIT_TAG appimagetool/master
         GIT_SUBMODULES ""
         CONFIGURE_COMMAND ${CMAKE_COMMAND} -G${CMAKE_GENERATOR} -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX} <SOURCE_DIR>
-        BUILD_COMMAND make gtest libappimage
+        BUILD_COMMAND make libappimage
         INSTALL_COMMAND make install DESTDIR=<INSTALL_DIR>
         )
 
